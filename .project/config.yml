@@ -1,0 +1,41 @@
+# Project. vault configuration
+# This is the equivalent of .obsidian/ — config and cache, never canonical data.
+
+vault:
+  name: Project.
+  version: 0.1.0
+  created: 2026-04-12
+
+index:
+  # SQLite cache — fully reconstructible from files on disk
+  path: index.db
+  fts: true  # Enable FTS5 full-text search
+
+watcher:
+  # File patterns to watch for changes
+  include:
+    - "**/*.md"
+    - "**/*.py"
+    - "**/*.ts"
+    - "**/*.tsx"
+    - "**/*.jsx"
+    - "**/*.json"
+    - "**/*.yml"
+    - "**/*.yaml"
+  exclude:
+    - "node_modules/**"
+    - "dist/**"
+    - ".project/**"
+    - ".git/**"
+    - "**/*.project.yml"  # Sidecars are metadata, not nodes
+
+sidecar:
+  # Pattern for binary/non-frontmatter file metadata
+  suffix: ".project.yml"
+  directory: ".project/sidecars"
+
+mcp:
+  default_scope: read
+  agents:
+    claude-code: [read, write]
+    claude-desktop: [read, write, admin]

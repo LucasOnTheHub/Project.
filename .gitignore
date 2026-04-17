@@ -1,0 +1,5 @@
+node_modules/
+dist/
+*.js.map
+.project/index.db
+.DS_Store

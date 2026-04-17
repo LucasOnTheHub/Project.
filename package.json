@@ -1,0 +1,41 @@
+{
+  "name": "project-dot",
+  "version": "0.1.0",
+  "description": "File-based project manager with a 3D spatial interface — M0 Foundations",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "project": "dist/cli/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "test": "vitest",
+    "start": "node dist/cli/index.js"
+  },
+  "keywords": ["project-manager", "file-based", "3d", "mcp", "vault"],
+  "author": "LucasOnTheHub",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "chalk": "^5.3.0",
+    "chokidar": "^4.0.0",
+    "commander": "^13.0.0",
+    "gray-matter": "^4.0.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
+    "eslint": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "prettier": "^3.4.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
