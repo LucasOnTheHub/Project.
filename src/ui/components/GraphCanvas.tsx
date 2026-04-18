@@ -203,7 +203,7 @@ export function GraphCanvas({ graph }: GraphCanvasProps) {
       })
       .filter((l): l is SimLink => l !== null);
 
-    // ── SVG setup ────────────────────────────────────────────────────────────
+    // ── SVG setup ────────────────────────────────────────────────────────────────
     svg.attr('width', W).attr('height', H);
 
     // Gradient defs for the master star glow
@@ -235,7 +235,7 @@ export function GraphCanvas({ graph }: GraphCanvasProps) {
     svg.call(zoom);
     svg.call(zoom.translateTo, W / 2, H / 2);
 
-    // ── Links ────────────────────────────────────────────────────────────────
+    // ── Links ───────────────────────────────────────────────────────────────────
     const linkG = rootG.append('g').attr('class', 'links');
 
     const linkEl = linkG
@@ -247,7 +247,7 @@ export function GraphCanvas({ graph }: GraphCanvasProps) {
       .attr('stroke-dasharray', (d) => d.kind === 'tag' ? '4,3' : null)
       .attr('marker-end', (d) => d.kind === 'link' ? 'url(#arrow)' : null);
 
-    // ── Nodes ────────────────────────────────────────────────────────────────
+    // ── Nodes ───────────────────────────────────────────────────────────────────
     const nodeG = rootG.append('g').attr('class', 'nodes');
 
     const nodeEl = nodeG
@@ -286,7 +286,7 @@ export function GraphCanvas({ graph }: GraphCanvasProps) {
       .attr('font-family', 'inherit')
       .attr('pointer-events', 'none');
 
-    // ── Drag ─────────────────────────────────────────────────────────────────
+    // ── Drag ─────────────────────────────────────────────────────────────────────
     const drag = d3.drag<SVGGElement, SimNode>()
       .on('start', (event, d) => {
         if (!event.active) sim.alphaTarget(0.3).restart();
@@ -305,7 +305,7 @@ export function GraphCanvas({ graph }: GraphCanvasProps) {
 
     nodeEl.call(drag);
 
-    // ── Simulation ───────────────────────────────────────────────────────────
+    // ── Simulation ────────────────────────────────────────────────────────────────
     const sim = d3.forceSimulation<SimNode>(simNodes)
       .force('link', d3.forceLink<SimNode, SimLink>(simLinks)
         .id((d) => d.id)

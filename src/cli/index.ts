@@ -43,7 +43,7 @@ program
     const graph = await reader.scan();
 
     console.log(chalk.yellow(`\nProject: ${graph.name}`));
-    console.log(chalk.green(`Master:  ${graph.master?.path ?? '(none)'}` ));
+    console.log(chalk.green(`Master:  ${graph.master?.path ?? '(none)'}`));
     console.log(chalk.white(`Nodes:   ${graph.nodes.length}`));
     console.log(chalk.white(`Edges:   ${graph.edges.length}`));
 
