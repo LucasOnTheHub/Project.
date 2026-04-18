@@ -11,49 +11,82 @@ directories:
 files:
   - dist/**/*
   - dist-ui/**/*
-  - node_modules/**/*
   - package.json
+  - "!node_modules/**"
+  - "!src/**"
+  - "!tests/**"
+  - "!*.config.*"
+  - "!*.map"
 
-# macOS
+# Modules natifs à exclure du bundle renderer (chargés en main process)
+asarUnpack:
+  - "**/node_modules/better-sqlite3/**"
+
+# Electron version (doit correspondre à la devDependency)
+electronVersion: "41.2.1"
+
+# Publication GitHub Releases
+publish:
+  provider: github
+  owner: LucasOnTheHub
+  repo: project-dot
+
+# ─── Windows ────────────────────────────────────────────────────────────────
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build-resources/icon.ico
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  installerIcon: build-resources/icon.ico
+  uninstallerIcon: build-resources/icon.ico
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Project.
+
+# ─── macOS ──────────────────────────────────────────────────────────────────
 mac:
-  category: public.app-category.productivity
-  icon: build-resources/icon.icns
   target:
     - target: dmg
       arch: [x64, arm64]
     - target: zip
       arch: [x64, arm64]
+  icon: build-resources/icon.icns
+  category: public.app-category.productivity
+  # Pour signer : définir CSC_LINK + CSC_KEY_PASSWORD dans l'env CI
+  # hardenedRuntime: true
+  # entitlements: build-resources/entitlements.mac.plist
 
-# Windows
-win:
-  icon: build-resources/icon.ico
-  target:
-    - target: nsis
-      arch: [x64]
-    - target: portable
-      arch: [x64]
+dmg:
+  title: "Project. ${version}"
+  window:
+    width: 540
+    height: 380
 
-# Linux
+# ─── Linux ──────────────────────────────────────────────────────────────────
 linux:
-  icon: build-resources/icon.png
   target:
     - target: AppImage
       arch: [x64]
     - target: deb
       arch: [x64]
-    - target: rpm
-      arch: [x64]
+  icon: build-resources/icon.png
   category: Office
+  maintainer: LucasOnTheHub <lpitraspro@gmail.com>
+  description: File-based project manager with a 3D spatial interface
 
-# NSIS (Windows installer)
-nsis:
-  oneClick: false
-  allowToChangeInstallationDirectory: true
-  createDesktopShortcut: true
-  createStartMenuShortcut: true
-
-# Auto-update (GitHub Releases)
-publish:
-  provider: github
-  owner: LucasOnTheHub
-  repo: Project.
+deb:
+  depends:
+    - libgtk-3-0
+    - libnotify4
+    - libnss3
+    - libxss1
+    - libxtst6
+    - xdg-utils
+    - libatspi2.0-0
+    - libdrm2
+    - libgbm1
+    - libasound2

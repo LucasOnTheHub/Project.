@@ -206,7 +206,7 @@ export class VaultReader extends EventEmitter {
 
   private shouldExclude(relPath: string, patterns: string[]): boolean {
     for (const pattern of patterns) {
-      const base = pattern.replace(/\*\*\/?\.?\*?/g, '').replace(/\/$/, '');
+      const base = pattern.replace(/\*\*\/?\*?/g, '').replace(/\/$/, '');
       if (base && relPath.startsWith(base)) return true;
     }
     return false;

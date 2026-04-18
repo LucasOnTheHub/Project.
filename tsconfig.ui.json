@@ -6,9 +6,12 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "strict": true,
+    "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
     "noEmit": true
   },
-  "include": ["src/ui/**/*.ts", "src/ui/**/*.tsx", "src/types/**/*.d.ts"]
+  "include": ["src/ui/**/*.tsx", "src/ui/**/*.ts", "src/electron/env.d.ts", "src/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }

@@ -7,36 +7,35 @@ vault:
   created: 2026-04-12
 
 index:
-  # SQLite cache rebuilt on every vault scan — safe to delete
-  db: .project/index.db
-  auto_rebuild: true
+  # SQLite cache — fully reconstructible from files on disk
+  path: index.db
+  fts: true  # Enable FTS5 full-text search
 
 watcher:
-  # File-system events (chokidar)
-  debounce_ms: 300
-  ignore:
-    - .project/index.db
-    - '**/.DS_Store'
-    - '**/node_modules/**'
+  # File patterns to watch for changes
+  include:
+    - "**/*.md"
+    - "**/*.py"
+    - "**/*.ts"
+    - "**/*.tsx"
+    - "**/*.jsx"
+    - "**/*.json"
+    - "**/*.yml"
+    - "**/*.yaml"
+  exclude:
+    - "node_modules/**"
+    - "dist/**"
+    - ".project/**"
+    - ".git/**"
+    - "**/*.project.yml"  # Sidecars are metadata, not nodes
 
-git:
-  # GitSync settings (M5)
-  auto_commit: false          # don't commit on every save
-  auto_push: false            # manual push only
-  default_branch: main
-  commit_prefix: 'chore(vault):'
-
-reminders:
-  # ReminderScheduler settings (M4)
-  check_interval_ms: 60000    # 1 minute
-  default_lead_time_hours: 24
+sidecar:
+  # Pattern for binary/non-frontmatter file metadata
+  suffix: ".project.yml"
+  directory: ".project/sidecars"
 
 mcp:
-  # HTTP transport (M7)
-  host: 127.0.0.1
-  port: 3333
-
-vaults:
-  # MultiVault (M6) — list of additional vaults to mount
-  # Each entry is a path to a vault root (containing .project/config.yml)
-  extra: []
+  default_scope: read
+  agents:
+    claude-code: [read, write]
+    claude-desktop: [read, write, admin]
