@@ -69,9 +69,6 @@ export class IndexDB {
     this.db.exec(SCHEMA);
   }
 
-  /**
-   * Upsert a node into the index.
-   */
   upsert(node: ProjectNode): void {
     const stmt = this.db.prepare(`
       INSERT INTO nodes (path, type, project, gravity, status, tags, links, created, metadata)
@@ -101,9 +98,6 @@ export class IndexDB {
     });
   }
 
-  /**
-   * Bulk upsert — wrapped in a transaction for performance.
-   */
   upsertMany(nodes: ProjectNode[]): void {
     const tx = this.db.transaction((items: ProjectNode[]) => {
       for (const node of items) {
@@ -113,16 +107,10 @@ export class IndexDB {
     tx(nodes);
   }
 
-  /**
-   * Remove a node by path.
-   */
   remove(path: string): void {
     this.db.prepare('DELETE FROM nodes WHERE path = ?').run(path);
   }
 
-  /**
-   * Get a node by path.
-   */
   get(path: string): ProjectNode | null {
     const row = this.db.prepare('SELECT * FROM nodes WHERE path = ?').get(path) as
       | Record<string, unknown>
@@ -132,9 +120,6 @@ export class IndexDB {
     return this.rowToNode(row);
   }
 
-  /**
-   * List all indexed nodes.
-   */
   listAll(): ProjectNode[] {
     const rows = this.db.prepare('SELECT * FROM nodes ORDER BY path').all() as Record<
       string,
@@ -143,9 +128,6 @@ export class IndexDB {
     return rows.map((r) => this.rowToNode(r));
   }
 
-  /**
-   * Full-text search across path, tags, and project.
-   */
   search(query: string): ProjectNode[] {
     const rows = this.db
       .prepare(
@@ -159,9 +141,6 @@ export class IndexDB {
     return rows.map((r) => this.rowToNode(r));
   }
 
-  /**
-   * Get index stats.
-   */
   stats(): { totalNodes: number; byType: Record<string, number> } {
     const total = this.db.prepare('SELECT COUNT(*) as count FROM nodes').get() as {
       count: number;
@@ -176,23 +155,13 @@ export class IndexDB {
     };
   }
 
-  /**
-   * Drop all data and rebuild (called before a full re-index).
-   */
   clear(): void {
     this.db.exec('DELETE FROM nodes');
   }
 
-  /**
-   * Close the database connection.
-   */
   close(): void {
     this.db.close();
   }
-
-  // -------------------------------------------------------------------------
-  // Private
-  // -------------------------------------------------------------------------
 
   private rowToNode(row: Record<string, unknown>): ProjectNode {
     const metadata = JSON.parse(row.metadata as string) as NodeMetadata;

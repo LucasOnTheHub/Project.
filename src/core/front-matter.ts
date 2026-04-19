@@ -12,10 +12,6 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { NodeMetadata, ParsedFile } from '../types/index.js';
 
-// ---------------------------------------------------------------------------
-// Defaults
-// ---------------------------------------------------------------------------
-
 const DEFAULT_METADATA: Omit<NodeMetadata, 'type' | 'project'> = {
   gravity: 0.5,
   links: [],
@@ -24,15 +20,7 @@ const DEFAULT_METADATA: Omit<NodeMetadata, 'type' | 'project'> = {
   created: new Date().toISOString().slice(0, 10),
 };
 
-// ---------------------------------------------------------------------------
-// Front-matter regex: matches content between opening and closing ---
-// ---------------------------------------------------------------------------
-
 const FRONT_MATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/;
-
-// ---------------------------------------------------------------------------
-// Parser
-// ---------------------------------------------------------------------------
 
 export class FrontMatterParser {
   constructor(
@@ -40,15 +28,10 @@ export class FrontMatterParser {
     private sidecarDirectory: string = '.project/sidecars',
   ) {}
 
-  /**
-   * Parse a file and extract its metadata + body.
-   * Tries inline front-matter first, falls back to sidecar.
-   */
   async parse(relativePath: string): Promise<ParsedFile> {
     const absolutePath = join(this.vaultRoot, relativePath);
     const raw = await readFile(absolutePath, 'utf-8').catch(() => null);
 
-    // --- Text file with potential inline front-matter ---
     if (raw !== null) {
       const match = FRONT_MATTER_RE.exec(raw);
 
@@ -65,7 +48,6 @@ export class FrontMatterParser {
         }
       }
 
-      // No front-matter in file — try sidecar
       const sidecar = await this.tryReadSidecar(relativePath);
       if (sidecar) {
         return {
@@ -76,7 +58,6 @@ export class FrontMatterParser {
         };
       }
 
-      // No metadata at all — return raw content with minimal metadata
       return {
         path: relativePath,
         metadata: this.mergeDefaults({ type: 'note', project: '' }),
@@ -85,7 +66,6 @@ export class FrontMatterParser {
       };
     }
 
-    // --- Binary / unreadable file — sidecar only ---
     const sidecar = await this.tryReadSidecar(relativePath);
     return {
       path: relativePath,
@@ -97,17 +77,10 @@ export class FrontMatterParser {
     };
   }
 
-  /**
-   * Serialize metadata back to front-matter string (for writing).
-   */
   stringify(metadata: NodeMetadata, body: string): string {
     const yamlStr = yaml.dump(metadata, { lineWidth: -1, noRefs: true });
     return `---\n${yamlStr}---\n${body}`;
   }
-
-  // -------------------------------------------------------------------------
-  // Private
-  // -------------------------------------------------------------------------
 
   private async tryReadSidecar(
     relativePath: string,
