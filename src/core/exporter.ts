@@ -6,38 +6,18 @@
  *   - md-bundle  : all .md files concatenated with YAML front-matter separators
  *
  * Both methods write to an output path and return that path on success.
- *
- * Note: `archiver` is a CommonJS module resolved from the M5 deps directory.
- * We import it via createRequire since the project uses ESM (Node16).
  */
 
 import { createWriteStream } from 'node:fs';
-import { readFile, writeFile, readdir, stat } from 'node:fs/promises';
+import { readFile, writeFile, readdir } from 'node:fs/promises';
 import { join, relative, extname } from 'node:path';
 import { createRequire } from 'node:module';
 import { VaultReader } from './vault-reader.js';
 
-// ── Dynamic require for CommonJS archiver ──────────────────────────────────
+// archiver is a CommonJS module — resolve via createRequire from ESM context
 const require = createRequire(import.meta.url);
-
-// At runtime we resolve archiver from either:
-//   1. node_modules (installed normally)
-//   2. the M5 session-local deps (Shadow Cloud workaround)
-function loadArchiver(): typeof import('archiver') {
-  const candidates = [
-    'archiver',
-    '/sessions/zen-focused-keller/tmp/m5_deps/node_modules/archiver/index.js',
-  ];
-  for (const c of candidates) {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return require(c) as typeof import('archiver');
-    } catch {
-      // try next
-    }
-  }
-  throw new Error('archiver package not found — run: npm install archiver');
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const archiver = require('archiver') as typeof import('archiver');
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -73,7 +53,6 @@ export class ExportService {
    * Appends a generated `project-index.json` at the root of the archive.
    */
   async exportZip(outPath: string): Promise<string> {
-    const archiver = loadArchiver();
     const graph = await this.reader.scan();
     const indexJson = JSON.stringify(
       {

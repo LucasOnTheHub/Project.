@@ -39,7 +39,7 @@ async function httpPost(url: string, payload: unknown, headers: Record<string, s
     const urlObj = new URL(url);
     const opts: http.RequestOptions = {
       hostname: urlObj.hostname, port: Number(urlObj.port), path: urlObj.pathname, method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data), ...headers },
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream', 'Content-Length': Buffer.byteLength(data), ...headers },
     };
     const req = http.request(opts, (res) => {
       let body = '';

@@ -6,32 +6,12 @@
  *
  * The module is designed to be safe — every method handles the "not a git repo"
  * case gracefully so callers never have to pre-check.
- *
- * Runtime resolution: same shadow-cloud workaround as archiver — we try the
- * project node_modules first, then the session-local M5 deps directory.
  */
 
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
+import { simpleGit } from 'simple-git';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SimpleGitModule = any;
-
-function loadSimpleGit(): SimpleGitModule {
-  const candidates = [
-    'simple-git',
-    '/sessions/zen-focused-keller/tmp/m5_deps/node_modules/simple-git/dist/cjs/index.js',
-  ];
-  for (const c of candidates) {
-    try {
-      return require(c);
-    } catch {
-      // try next
-    }
-  }
-  throw new Error('simple-git package not found — run: npm install simple-git');
-}
 
 // ── Public types (canonical definition lives in src/types/git.ts) ─────────────
 
@@ -44,11 +24,7 @@ export class GitSync {
   private sg: SimpleGitModule;
 
   constructor(private vaultRoot: string) {
-    const lib = loadSimpleGit();
-    // simple-git exports a factory as default or as the module itself
-    const factory: (dir: string, opts?: object) => SimpleGitModule =
-      lib.default ?? lib.simpleGit ?? lib;
-    this.sg = factory(vaultRoot, { baseDir: vaultRoot });
+    this.sg = simpleGit(vaultRoot, { baseDir: vaultRoot });
   }
 
   /** Returns true if the vault is inside a git repository */

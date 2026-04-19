@@ -19,6 +19,9 @@ interface Session {
   createdAt: number;
 }
 
+const MAX_SESSIONS = 100;
+const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
 export async function startHttpServer(
   vaultRoot: string,
   options: HttpServerOptions = {},
@@ -26,11 +29,25 @@ export async function startHttpServer(
   const {
     port = 3741,
     host = '127.0.0.1',
-    scope = 'admin',
+    scope = 'read',
     stateless = false,
   } = options;
 
+  const apiKey = process.env['MCP_API_KEY'];
+
   const sessions = new Map<string, Session>();
+
+  // Periodically evict sessions older than SESSION_TTL_MS
+  const sweepInterval = setInterval(() => {
+    const now = Date.now();
+    for (const [id, session] of sessions) {
+      if (now - session.createdAt > SESSION_TTL_MS) {
+        session.transport.close().catch(() => {});
+        sessions.delete(id);
+      }
+    }
+  }, 60_000);
+  sweepInterval.unref();
 
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
@@ -41,12 +58,22 @@ export async function startHttpServer(
         transport: 'streamable-http',
         stateless,
         sessions: stateless ? null : sessions.size,
-        vault: vaultRoot,
         ts: new Date().toISOString(),
       });
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(body);
       return;
+    }
+
+    // API-key authentication (only required when MCP_API_KEY is set)
+    if (apiKey) {
+      const authHeader = req.headers['authorization'];
+      const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined;
+      if (token !== apiKey) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Unauthorized' }));
+        return;
+      }
     }
 
     if (url.pathname === '/mcp') {
@@ -98,6 +125,12 @@ export async function startHttpServer(
           return;
         }
 
+        if (sessions.size >= MAX_SESSIONS) {
+          res.writeHead(503, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Too many active sessions' }));
+          return;
+        }
+
         const newSessionId = randomUUID();
         const transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => newSessionId,
@@ -131,8 +164,9 @@ export async function startHttpServer(
   });
 
   const mode = stateless ? 'stateless' : 'stateful';
+  const authNote = apiKey ? ' (auth: bearer token)' : ' (auth: none — set MCP_API_KEY to enable)';
   process.stderr.write(
-    `[project-mcp] HTTP/SSE server listening on http://${host}:${port}/mcp (${mode})\n` +
+    `[project-mcp] HTTP/SSE server listening on http://${host}:${port}/mcp (${mode})${authNote}\n` +
     `[project-mcp] Health: http://${host}:${port}/health\n`,
   );
 
